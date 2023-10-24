@@ -23,6 +23,7 @@ export function Piece({
     arePiecesDraggable,
     arePremovesAllowed,
     boardWidth,
+    boardOrientation,
     chessPieces,
     currentPosition,
     id,
@@ -33,6 +34,7 @@ export function Piece({
     onPieceDragEnd,
     positionDifferences,
     premoves,
+    onPromotionCheck,
   } = useChessboard();
 
   const [pieceStyle, setPieceStyle] = useState({
@@ -102,14 +104,13 @@ export function Piece({
   useEffect(() => {
     const removedPiece = positionDifferences.removed?.[square];
     // return as null and not loaded yet
-    if (!positionDifferences.added) return;
+    if (!positionDifferences.added || !removedPiece) return;
     // check if piece matches or if removed piece was a pawn and new square is on 1st or 8th rank (promotion)
     const newSquare = (
       Object.entries(positionDifferences.added) as [Square, Pc][]
     ).find(
       ([s, p]) =>
-        p === removedPiece ||
-        (removedPiece?.[1] === "P" && (s[1] === "1" || s[1] === "8"))
+        p === removedPiece || onPromotionCheck(square, s, removedPiece)
     );
     // we can perform animation if our square was in removed, AND the matching piece is in added AND this isn't a premoved piece
     if (
@@ -125,8 +126,14 @@ export function Piece({
         setPieceStyle((oldPieceStyle) => ({
           ...oldPieceStyle,
           transform: `translate(${
-            (targetSq.charCodeAt(0) - sourceSq.charCodeAt(0)) * squareWidth
-          }px, ${(Number(sourceSq[1]) - Number(targetSq[1])) * squareWidth}px)`,
+            (boardOrientation === "black" ? -1 : 1) *
+            (targetSq.charCodeAt(0) - sourceSq.charCodeAt(0)) *
+            squareWidth
+          }px, ${
+            (boardOrientation === "black" ? -1 : 1) *
+            (Number(sourceSq[1]) - Number(targetSq[1])) *
+            squareWidth
+          }px)`,
           transition: `transform ${animationDuration}ms`,
           zIndex: 6,
         }));

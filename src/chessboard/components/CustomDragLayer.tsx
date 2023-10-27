@@ -33,8 +33,6 @@ const getItemStyle = (
     );
   }
 
-  console.log(x, y);
-
   const transform = `translate(${x}px, ${y}px)`;
 
   return {

@@ -1,11 +1,56 @@
-import { ReactNode, useCallback } from "react";
-import { useDragLayer, XYCoord } from "react-dnd";
+import { ReactNode } from "react";
+import { XYCoord, useDragLayer } from "react-dnd";
 
 import { useChessboard } from "../context/chessboard-context";
+import { getBoundPieceCoordinates } from "../functions";
 import { CustomPieceFn, Piece, Square } from "../types";
 
+const getItemStyle = (
+  clientOffset: XYCoord | null,
+  sourceClientOffset: XYCoord | null,
+  snapToCursor: boolean,
+  allowDragOutsideBoard: boolean,
+  pieceSize: number,
+  boardOffset: XYCoord,
+  boardWidth: number
+) => {
+  if (!clientOffset || !sourceClientOffset) return { display: "none" };
+
+  let { x, y } = snapToCursor ? clientOffset : sourceClientOffset;
+  const halfSquareWidth = pieceSize / 2;
+
+  if (snapToCursor) {
+    x -= halfSquareWidth;
+    y -= halfSquareWidth;
+  }
+
+  if (!allowDragOutsideBoard) {
+    [x, y] = getBoundPieceCoordinates(
+      { x, y },
+      boardOffset,
+      boardWidth,
+      halfSquareWidth
+    );
+  }
+
+  const transform = `translate(${x}px, ${y}px)`;
+
+  return {
+    transform,
+    WebkitTransform: transform,
+    touchAction: "none",
+  };
+};
+
 export function CustomDragLayer() {
-  const { boardWidth, chessPieces, id, snapToCursor } = useChessboard();
+  const {
+    boardWidth,
+    chessPieces,
+    id,
+    snapToCursor,
+    boardRef,
+    allowDragOutsideBoard,
+  } = useChessboard();
 
   const collectedProps = useDragLayer((monitor) => ({
     item: monitor.getItem(),
@@ -26,25 +71,21 @@ export function CustomDragLayer() {
     isDragging: boolean;
   } = collectedProps;
 
-  const getItemStyle = useCallback(
-    (clientOffset: XYCoord | null, sourceClientOffset: XYCoord | null) => {
-      if (!clientOffset || !sourceClientOffset) return { display: "none" };
+  const boardOffset = {
+    x: boardRef.current?.getBoundingClientRect().left || 0,
+    y: boardRef.current?.getBoundingClientRect().top || 0,
+  };
 
-      let { x, y } = snapToCursor ? clientOffset : sourceClientOffset;
-      if (snapToCursor) {
-        const halfSquareWidth = boardWidth / 8 / 2;
-        x -= halfSquareWidth;
-        y -= halfSquareWidth;
-      }
-      const transform = `translate(${x}px, ${y}px)`;
+  const pieceSize = boardWidth / 8;
 
-      return {
-        transform,
-        WebkitTransform: transform,
-        touchAction: "none",
-      };
-    },
-    [boardWidth, snapToCursor]
+  const itemStyle = getItemStyle(
+    clientOffset,
+    sourceClientOffset,
+    snapToCursor,
+    allowDragOutsideBoard,
+    pieceSize,
+    boardOffset,
+    boardWidth
   );
 
   return isDragging && item.id === id ? (
@@ -57,14 +98,18 @@ export function CustomDragLayer() {
         top: 0,
       }}
     >
-      <div style={getItemStyle(clientOffset, sourceClientOffset)}>
+      <div style={itemStyle}>
         {typeof chessPieces[item.piece] === "function" ? (
           (chessPieces[item.piece] as CustomPieceFn)({
             squareWidth: boardWidth / 8,
             isDragging: true,
           })
         ) : (
-          <svg viewBox={"1 1 43 43"} width={boardWidth / 8} height={boardWidth / 8}>
+          <svg
+            viewBox={"1 1 43 43"}
+            width={boardWidth / 8}
+            height={boardWidth / 8}
+          >
             <g>{chessPieces[item.piece] as ReactNode}</g>
           </svg>
         )}

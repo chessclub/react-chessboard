@@ -1,5 +1,5 @@
-import type { FC, ReactElement, ReactNode, Ref, RefObject } from "react";
 import { BackendFactory } from "dnd-core";
+import type { FC, ReactElement, ReactNode, Ref, RefObject } from "react";
 
 export type Square =
   | "a8"
@@ -361,4 +361,9 @@ export type ChessboardProps = {
    * @default false
    */
   autoPromoteToQueen?: boolean;
+  /**
+   * Whether or not to allow piece dragging outside the board
+   * @default true;
+   */
+  allowDragOutsideBoard?: boolean;
 };

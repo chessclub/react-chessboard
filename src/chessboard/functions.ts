@@ -1,4 +1,4 @@
-import { BoardOrientation, BoardPosition, Piece, Square } from "./types";
+import { XYCoord } from "react-dnd";
 import {
   BLACK_COLUMN_VALUES,
   BLACK_ROWS,
@@ -7,6 +7,7 @@ import {
   WHITE_COLUMN_VALUES,
   WHITE_ROWS,
 } from "./consts";
+import { BoardOrientation, BoardPosition, Piece, Square } from "./types";
 
 /**
  * Retrieves the coordinates at the centre of the requested square, relative to the top left of the board (0, 0).
@@ -188,4 +189,28 @@ function fenToPieceCode(piece: string): Piece {
   }
   // white piece
   return ("w" + piece.toUpperCase()) as Piece;
+}
+
+/**
+ * Returns dragged piece coordinates bound by the board edges
+ */
+export function getBoundPieceCoordinates(
+  piecePosition: XYCoord,
+  boardOffset: XYCoord,
+  boardWidth: number,
+  halfSquareWidth: number
+) {
+  const { x, y } = piecePosition;
+  const { x: boardX, y: boardY } = boardOffset;
+
+  const boundX = Math.max(
+    boardX - halfSquareWidth,
+    Math.min(boardX + boardWidth - halfSquareWidth, x)
+  );
+  const boundY = Math.max(
+    boardY - halfSquareWidth,
+    Math.min(boardY + boardWidth - halfSquareWidth, y)
+  );
+
+  return [boundX, boundY];
 }

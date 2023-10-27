@@ -9,19 +9,19 @@ import {
   useState,
 } from "react";
 
-import { defaultPieces } from "../media/pieces";
 import {
   convertPositionToObject,
   getPositionDifferences,
   isDifferentFromStart,
 } from "../functions";
+import { defaultPieces } from "../media/pieces";
 import {
+  Arrow,
   BoardPosition,
   ChessboardProps,
   CustomPieces,
   Piece,
   Square,
-  Arrow,
 } from "../types";
 
 import { useArrows } from "../hooks/useArrows";
@@ -100,6 +100,8 @@ interface ChessboardProviderContext {
   setPromoteToSquare: React.Dispatch<React.SetStateAction<Square | null>>;
   setShowPromoteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   showPromoteDialog: boolean;
+  boardRef: React.RefObject<HTMLDivElement>;
+  allowDragOutsideBoard: boolean;
 }
 
 export const ChessboardContext = createContext({} as ChessboardProviderContext);
@@ -163,6 +165,7 @@ export const ChessboardProvider = forwardRef(
       showBoardNotation = true,
       showPromotionDialog = false,
       snapToCursor = true,
+      allowDragOutsideBoard = true,
     }: ChessboardProviderProps,
     ref
   ) => {
@@ -178,8 +181,9 @@ export const ChessboardProvider = forwardRef(
     }>({ removed: {}, added: {} });
 
     // colour of last piece moved to determine if premoving
-    const [lastPieceColour, setLastPieceColour] =
-      useState<string | undefined>(undefined);
+    const [lastPieceColour, setLastPieceColour] = useState<string | undefined>(
+      undefined
+    );
 
     // show / hide promotion dialog
     const [showPromoteDialog, setShowPromoteDialog] = useState(
@@ -187,10 +191,12 @@ export const ChessboardProvider = forwardRef(
     );
 
     // which square a pawn is being promoted to
-    const [promoteFromSquare, setPromoteFromSquare] =
-      useState<Square | null>(null);
-    const [promoteToSquare, setPromoteToSquare] =
-      useState<Square | null>(promotionToSquare);
+    const [promoteFromSquare, setPromoteFromSquare] = useState<Square | null>(
+      null
+    );
+    const [promoteToSquare, setPromoteToSquare] = useState<Square | null>(
+      promotionToSquare
+    );
 
     // current premoves
     const [premoves, setPremoves] = useState<Premove[]>([]);
@@ -199,8 +205,9 @@ export const ChessboardProvider = forwardRef(
     const premovesRef = useRef(premoves);
 
     // current right mouse down square
-    const [currentRightClickDown, setCurrentRightClickDown] =
-      useState<Square | undefined>();
+    const [currentRightClickDown, setCurrentRightClickDown] = useState<
+      Square | undefined
+    >();
 
     // chess pieces/styling
     const [chessPieces, setChessPieces] = useState({
@@ -442,6 +449,8 @@ export const ChessboardProvider = forwardRef(
       setCurrentRightClickDown(undefined);
     }
 
+    const boardRef = useRef<HTMLDivElement>(null);
+
     const ChessboardProviderContextValue: ChessboardProviderContext = {
       animationDuration,
       arePiecesDraggable,
@@ -496,6 +505,8 @@ export const ChessboardProvider = forwardRef(
       showPromoteDialog,
       autoPromoteToQueen,
       currentRightClickDown,
+      boardRef,
+      allowDragOutsideBoard,
     };
 
     return (

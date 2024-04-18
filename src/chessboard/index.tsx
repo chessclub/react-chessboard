@@ -29,22 +29,14 @@ export type ClearPremoves = {
 export const Chessboard = forwardRef<ClearPremoves, ChessboardProps>(
   (props, ref) => {
     const { customDndBackend, customDndBackendOptions, ...otherProps } = props;
-    const [clientWindow, setClientWindow] = useState<Window>();
-    const [backendSet, setBackendSet] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-    const [boardWidth, setBoardWidth] = useState(props.boardWidth);
+    const [boardWidth, setBoardWidth] = useState<number>(Number(localStorage.getItem('boardSize')));
 
     const boardRef = useRef<HTMLObjectElement>(null);
 
     useEffect(() => {
-      setIsMobile("ontouchstart" in window);
-      setBackendSet(true);
-      setClientWindow(window);
-    }, []);
-
-    useEffect(() => {
       if (props.boardWidth === undefined && boardRef.current?.offsetWidth) {
         const resizeObserver = new ResizeObserver(() => {
+          localStorage.setItem('boardSize', `${boardRef.current?.offsetWidth}`);
           setBoardWidth(boardRef.current?.offsetWidth as number);
         });
         resizeObserver.observe(boardRef.current);
@@ -53,12 +45,12 @@ export const Chessboard = forwardRef<ClearPremoves, ChessboardProps>(
           resizeObserver.disconnect();
         };
       }
-    }, [boardRef.current, clientWindow]);
+    }, [boardRef.current]);
 
     const backend =
-      customDndBackend || (isMobile ? TouchBackend : HTML5Backend);
+      customDndBackend || ("ontouchstart" in window ? TouchBackend : HTML5Backend);
 
-    return backendSet && clientWindow ? (
+    return  (
       <ErrorBoundary>
         <div
           style={{ display: "flex", flexDirection: "column", width: "100%" }}
@@ -66,10 +58,9 @@ export const Chessboard = forwardRef<ClearPremoves, ChessboardProps>(
           <div ref={boardRef} style={{ width: "100%" }} />
           <DndProvider
             backend={backend}
-            context={clientWindow}
+            context={window}
             options={customDndBackend ? customDndBackendOptions : undefined}
           >
-            {boardWidth && (
               <ChessboardProvider
                 boardWidth={boardWidth}
                 {...otherProps}
@@ -79,10 +70,9 @@ export const Chessboard = forwardRef<ClearPremoves, ChessboardProps>(
                 <CustomDragLayer />
                 <Board />
               </ChessboardProvider>
-            )}
           </DndProvider>
         </div>
       </ErrorBoundary>
-    ) : null;
+    ) 
   }
 );

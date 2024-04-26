@@ -1,56 +1,16 @@
-import { ReactNode } from "react";
+import { ReactNode, useCallback, useEffect } from "react";
 import { XYCoord, useDragLayer } from "react-dnd";
 
 import { useChessboard } from "../context/chessboard-context";
-import { getBoundPieceCoordinates } from "../functions";
 import { CustomPieceFn, Piece, Square } from "../types";
 
-const getItemStyle = (
-  clientOffset: XYCoord | null,
-  sourceClientOffset: XYCoord | null,
-  snapToCursor: boolean,
-  allowDragOutsideBoard: boolean,
-  pieceSize: number,
-  boardOffset: XYCoord,
-  boardWidth: number
-) => {
-  if (!clientOffset || !sourceClientOffset) return { display: "none" };
-
-  let { x, y } = snapToCursor ? clientOffset : sourceClientOffset;
-  const halfSquareWidth = pieceSize / 2;
-
-  if (snapToCursor) {
-    x -= halfSquareWidth;
-    y -= halfSquareWidth;
-  }
-
-  if (!allowDragOutsideBoard) {
-    [x, y] = getBoundPieceCoordinates(
-      { x, y },
-      boardOffset,
-      boardWidth,
-      halfSquareWidth
-    );
-  }
-
-  const transform = `translate(${x}px, ${y}px)`;
-
-  return {
-    transform,
-    WebkitTransform: transform,
-    touchAction: "none",
-  };
+export type CustomDragLayerProps = {
+  boardContainer: { left: number; top: number };
 };
 
-export function CustomDragLayer() {
-  const {
-    boardWidth,
-    chessPieces,
-    id,
-    snapToCursor,
-    boardRef,
-    allowDragOutsideBoard,
-  } = useChessboard();
+export function CustomDragLayer({ boardContainer }: CustomDragLayerProps) {
+  const { boardWidth, chessPieces, id, snapToCursor, allowDragOutsideBoard, currentPosition, positionDifferences, clearPremove } =
+    useChessboard();
 
   const collectedProps = useDragLayer((monitor) => ({
     item: monitor.getItem(),
@@ -58,6 +18,7 @@ export function CustomDragLayer() {
     sourceClientOffset: monitor.getSourceClientOffset(),
     isDragging: monitor.isDragging(),
   }));
+
 
   const {
     isDragging,
@@ -71,24 +32,50 @@ export function CustomDragLayer() {
     isDragging: boolean;
   } = collectedProps;
 
-  const boardOffset = {
-    x: boardRef.current?.getBoundingClientRect().left || 0,
-    y: boardRef.current?.getBoundingClientRect().top || 0,
-  };
+  const getItemStyle = useCallback(
+    (clientOffset: XYCoord | null, sourceClientOffset: XYCoord | null) => {
+      if (!clientOffset || !sourceClientOffset) return { display: "none" };
 
-  const pieceSize = boardWidth / 8;
+      let { x, y } = snapToCursor ? clientOffset : sourceClientOffset;
+      const halfSquareWidth = boardWidth / 8 / 2;
+      if (snapToCursor) {
+        x -= halfSquareWidth;
+        y -= halfSquareWidth;
+      }
 
-  const itemStyle = getItemStyle(
-    clientOffset,
-    sourceClientOffset,
-    snapToCursor,
-    allowDragOutsideBoard,
-    pieceSize,
-    boardOffset,
-    boardWidth
+      if (!allowDragOutsideBoard) {
+        const { left, top } = boardContainer;
+        // half square so the piece reaches the board
+        const maxLeft = left - halfSquareWidth;
+        const maxTop = top - halfSquareWidth;
+        const maxRight = left + boardWidth - halfSquareWidth;
+        const maxBottom = top + boardWidth - halfSquareWidth;
+        x = Math.max(maxLeft, Math.min(x, maxRight));
+        y = Math.max(maxTop, Math.min(y, maxBottom));
+      }
+
+      const transform = `translate(${x}px, ${y}px)`;
+
+      return {
+        transform,
+        WebkitTransform: transform,
+        touchAction: "none",
+      };
+    },
+    [boardWidth, allowDragOutsideBoard, snapToCursor, boardContainer]
   );
 
-  return isDragging && item.id === id ? (
+  const itemRemoved = currentPosition[item?.square] !== item?.piece
+
+  useEffect(() => {
+    if (itemRemoved) {
+      clearPremove()
+    }
+  }, [itemRemoved])
+
+
+
+  return isDragging && item.id === id && !itemRemoved ? (
     <div
       style={{
         position: "fixed",
@@ -98,7 +85,7 @@ export function CustomDragLayer() {
         top: 0,
       }}
     >
-      <div style={itemStyle}>
+      <div style={getItemStyle(clientOffset, sourceClientOffset)}>
         {typeof chessPieces[item.piece] === "function" ? (
           (chessPieces[item.piece] as CustomPieceFn)({
             squareWidth: boardWidth / 8,

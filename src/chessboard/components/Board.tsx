@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useChessboard } from "../context/chessboard-context";
 import { Arrows } from "./Arrows";
 import { WhiteKing } from "./ErrorBoundary";
@@ -6,8 +6,6 @@ import { PromotionDialog } from "./PromotionDialog";
 import { Squares } from "./Squares";
 
 export function Board() {
-  const boardRef = useRef<HTMLDivElement>(null);
-
   const {
     boardWidth,
     clearCurrentRightClickDown,
@@ -15,6 +13,7 @@ export function Board() {
     setShowPromoteDialog,
     showPromoteDialog,
     customBoardStyle,
+    boardRef,
   } = useChessboard();
 
   useEffect(() => {

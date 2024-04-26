@@ -71,6 +71,7 @@ interface ChessboardProviderContext {
   promotionDialogVariant: RequiredChessboardProps["promotionDialogVariant"];
   showBoardNotation: RequiredChessboardProps["showBoardNotation"];
   snapToCursor: RequiredChessboardProps["snapToCursor"];
+  clearPremove: RequiredChessboardProps["clearPremove"]
 
   // Exported by context
   arrows: Arrow[];
@@ -136,14 +137,14 @@ export const ChessboardProvider = forwardRef(
       dropOffBoardAction = "snapback",
       id = 0,
       isDraggablePiece = () => true,
-      getPositionObject = () => {},
-      onArrowsChange = () => {},
-      onDragOverSquare = () => {},
-      onMouseOutSquare = () => {},
-      onMouseOverSquare = () => {},
-      onPieceClick = () => {},
-      onPieceDragBegin = () => {},
-      onPieceDragEnd = () => {},
+      getPositionObject = () => { },
+      onArrowsChange = () => { },
+      onDragOverSquare = () => { },
+      onMouseOutSquare = () => { },
+      onMouseOverSquare = () => { },
+      onPieceClick = () => { },
+      onPieceDragBegin = () => { },
+      onPieceDragEnd = () => { },
       onPieceDrop = () => true,
       onPromotionCheck = (sourceSquare, targetSquare, piece) => {
         return (
@@ -157,8 +158,8 @@ export const ChessboardProvider = forwardRef(
         );
       },
       onPromotionPieceSelect,
-      onSquareClick = () => {},
-      onSquareRightClick = () => {},
+      onSquareClick = () => { },
+      onSquareRightClick = () => { },
       position = "start",
       promotionDialogVariant = "default",
       promotionToSquare = null,
@@ -166,6 +167,7 @@ export const ChessboardProvider = forwardRef(
       showPromotionDialog = false,
       snapToCursor = true,
       allowDragOutsideBoard = true,
+      clearPremove = () => { },
     }: ChessboardProviderProps,
     ref
   ) => {
@@ -181,9 +183,8 @@ export const ChessboardProvider = forwardRef(
     }>({ removed: {}, added: {} });
 
     // colour of last piece moved to determine if premoving
-    const [lastPieceColour, setLastPieceColour] = useState<string | undefined>(
-      undefined
-    );
+    const [lastPieceColour, setLastPieceColour] =
+      useState<string | undefined>(undefined);
 
     // show / hide promotion dialog
     const [showPromoteDialog, setShowPromoteDialog] = useState(
@@ -191,12 +192,10 @@ export const ChessboardProvider = forwardRef(
     );
 
     // which square a pawn is being promoted to
-    const [promoteFromSquare, setPromoteFromSquare] = useState<Square | null>(
-      null
-    );
-    const [promoteToSquare, setPromoteToSquare] = useState<Square | null>(
-      promotionToSquare
-    );
+    const [promoteFromSquare, setPromoteFromSquare] =
+      useState<Square | null>(null);
+    const [promoteToSquare, setPromoteToSquare] =
+      useState<Square | null>(promotionToSquare);
 
     // current premoves
     const [premoves, setPremoves] = useState<Premove[]>([]);
@@ -205,9 +204,8 @@ export const ChessboardProvider = forwardRef(
     const premovesRef = useRef(premoves);
 
     // current right mouse down square
-    const [currentRightClickDown, setCurrentRightClickDown] = useState<
-      Square | undefined
-    >();
+    const [currentRightClickDown, setCurrentRightClickDown] =
+      useState<Square | undefined>();
 
     // chess pieces/styling
     const [chessPieces, setChessPieces] = useState({
@@ -362,7 +360,10 @@ export const ChessboardProvider = forwardRef(
       // if onPieceDrop function provided, execute it, position must be updated externally and captured by useEffect above for this move to show on board
       if (onPieceDrop.length) {
         const isValidMove = onPieceDrop(sourceSq, targetSq, piece);
-        if (!isValidMove) clearPremoves();
+        if (!isValidMove) {
+          clearPremoves();
+          setWasManualDrop(false);
+        }
       } else {
         // delete if dropping off board
         if (dropOffBoardAction === "trash" && !targetSq) {
@@ -448,7 +449,6 @@ export const ChessboardProvider = forwardRef(
     function clearCurrentRightClickDown() {
       setCurrentRightClickDown(undefined);
     }
-
     const boardRef = useRef<HTMLDivElement>(null);
 
     const ChessboardProviderContextValue: ChessboardProviderContext = {
@@ -481,6 +481,7 @@ export const ChessboardProvider = forwardRef(
       showBoardNotation,
       snapToCursor,
       promotionDialogVariant,
+      allowDragOutsideBoard,
 
       arrows,
       newArrow,
@@ -506,7 +507,7 @@ export const ChessboardProvider = forwardRef(
       autoPromoteToQueen,
       currentRightClickDown,
       boardRef,
-      allowDragOutsideBoard,
+      clearPremove
     };
 
     return (

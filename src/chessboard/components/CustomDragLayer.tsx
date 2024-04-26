@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { XYCoord, useDragLayer } from "react-dnd";
 
 import { useChessboard } from "../context/chessboard-context";
@@ -43,14 +43,8 @@ const getItemStyle = (
 };
 
 export function CustomDragLayer() {
-  const {
-    boardWidth,
-    chessPieces,
-    id,
-    snapToCursor,
-    boardRef,
-    allowDragOutsideBoard,
-  } = useChessboard();
+  const { boardWidth, chessPieces, id, snapToCursor, allowDragOutsideBoard, boardRef, currentPosition, positionDifferences, clearPremove } =
+    useChessboard();
 
   const collectedProps = useDragLayer((monitor) => ({
     item: monitor.getItem(),
@@ -58,6 +52,7 @@ export function CustomDragLayer() {
     sourceClientOffset: monitor.getSourceClientOffset(),
     isDragging: monitor.isDragging(),
   }));
+
 
   const {
     isDragging,
@@ -88,7 +83,17 @@ export function CustomDragLayer() {
     boardWidth
   );
 
-  return isDragging && item.id === id ? (
+  const itemRemoved = currentPosition[item?.square] !== item?.piece
+
+  useEffect(() => {
+    if (itemRemoved) {
+      clearPremove()
+    }
+  }, [itemRemoved])
+
+
+
+  return isDragging && item.id === id && !itemRemoved ? (
     <div
       style={{
         position: "fixed",

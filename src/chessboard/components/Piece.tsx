@@ -172,6 +172,7 @@ export function Piece({
     <div
       ref={arePiecesDraggable ? (canDrag ? drag : null) : null}
       onClick={() => onPieceClick(piece)}
+      color={`figure-${piece[0]}`}
       data-piece={piece}
       style={pieceStyle}
     >

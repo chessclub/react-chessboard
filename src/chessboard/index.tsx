@@ -50,7 +50,7 @@ export const Chessboard = forwardRef<ClearPremoves, ChessboardProps>(
     const backend =
       customDndBackend || ("ontouchstart" in window ? TouchBackend : HTML5Backend);
 
-    return  (
+    return (
       <ErrorBoundary>
         <div
           style={{ display: "flex", flexDirection: "column", width: "100%" }}
@@ -61,18 +61,18 @@ export const Chessboard = forwardRef<ClearPremoves, ChessboardProps>(
             context={window}
             options={customDndBackend ? customDndBackendOptions : undefined}
           >
-              <ChessboardProvider
-                boardWidth={boardWidth}
-                {...otherProps}
-                ref={ref}
-              >
-                <ConditionalDropLayer />
-                <CustomDragLayer />
-                <Board />
-              </ChessboardProvider>
+            <ChessboardProvider
+              boardWidth={boardWidth}
+              {...otherProps}
+              ref={ref}
+            >
+              <ConditionalDropLayer />
+              <CustomDragLayer />
+              <Board />
+            </ChessboardProvider>
           </DndProvider>
         </div>
       </ErrorBoundary>
-    ) 
+    )
   }
 );

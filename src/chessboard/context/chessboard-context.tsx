@@ -41,6 +41,7 @@ type RequiredChessboardProps = Required<ChessboardProps>;
 
 interface ChessboardProviderContext {
   // Props from user
+  allowDragOutsideBoard: RequiredChessboardProps["allowDragOutsideBoard"];
   animationDuration: RequiredChessboardProps["animationDuration"];
   arePiecesDraggable: RequiredChessboardProps["arePiecesDraggable"];
   arePremovesAllowed: RequiredChessboardProps["arePremovesAllowed"];
@@ -49,6 +50,7 @@ interface ChessboardProviderContext {
   boardWidth: RequiredChessboardProps["boardWidth"];
   customArrowColor: RequiredChessboardProps["customArrowColor"];
   customBoardStyle: ChessboardProps["customBoardStyle"];
+  customNotationStyle: ChessboardProps["customNotationStyle"];
   customDarkSquareStyle: RequiredChessboardProps["customDarkSquareStyle"];
   customDropSquareStyle: RequiredChessboardProps["customDropSquareStyle"];
   customLightSquareStyle: RequiredChessboardProps["customLightSquareStyle"];
@@ -101,8 +103,6 @@ interface ChessboardProviderContext {
   setPromoteToSquare: React.Dispatch<React.SetStateAction<Square | null>>;
   setShowPromoteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   showPromoteDialog: boolean;
-  boardRef: React.RefObject<HTMLDivElement>;
-  allowDragOutsideBoard: boolean;
 }
 
 export const ChessboardContext = createContext({} as ChessboardProviderContext);
@@ -112,6 +112,7 @@ export const useChessboard = () => useContext(ChessboardContext);
 export const ChessboardProvider = forwardRef(
   (
     {
+      allowDragOutsideBoard = true,
       animationDuration = 300,
       areArrowsAllowed = true,
       arePiecesDraggable = true,
@@ -124,6 +125,7 @@ export const ChessboardProvider = forwardRef(
       customArrows,
       customArrowColor = "rgb(255,170,0)",
       customBoardStyle,
+      customNotationStyle,
       customDarkSquareStyle = { backgroundColor: "#B58863" },
       customDropSquareStyle = {
         boxShadow: "inset 0 0 1px 6px rgba(255,255,255,0.75)",
@@ -449,6 +451,7 @@ export const ChessboardProvider = forwardRef(
     function clearCurrentRightClickDown() {
       setCurrentRightClickDown(undefined);
     }
+    
     const boardRef = useRef<HTMLDivElement>(null);
 
     const ChessboardProviderContextValue: ChessboardProviderContext = {
@@ -459,6 +462,7 @@ export const ChessboardProvider = forwardRef(
       boardWidth,
       customArrowColor,
       customBoardStyle,
+      customNotationStyle,
       customDarkSquareStyle,
       customDropSquareStyle,
       customLightSquareStyle,

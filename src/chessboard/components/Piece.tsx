@@ -125,15 +125,13 @@ export function Piece({
         const squareWidth = boardWidth / 8;
         setPieceStyle((oldPieceStyle) => ({
           ...oldPieceStyle,
-          transform: `translate(${
-            (boardOrientation === "black" ? -1 : 1) *
+          transform: `translate(${(boardOrientation === "black" ? -1 : 1) *
             (targetSq.charCodeAt(0) - sourceSq.charCodeAt(0)) *
             squareWidth
-          }px, ${
-            (boardOrientation === "black" ? -1 : 1) *
+            }px, ${(boardOrientation === "black" ? -1 : 1) *
             (Number(sourceSq[1]) - Number(targetSq[1])) *
             squareWidth
-          }px)`,
+            }px)`,
           transition: `transform ${animationDuration}ms`,
           zIndex: 6,
         }));
@@ -174,6 +172,7 @@ export function Piece({
       onClick={() => onPieceClick(piece)}
       data-piece={piece}
       style={pieceStyle}
+      color={`figure-${piece[0]}`}
     >
       {typeof chessPieces[piece] === "function" ? (
         (chessPieces[piece] as CustomPieceFn)({

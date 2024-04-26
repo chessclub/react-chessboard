@@ -366,4 +366,5 @@ export type ChessboardProps = {
    * @default true;
    */
   allowDragOutsideBoard?: boolean;
+  clearPremove?: any
 };

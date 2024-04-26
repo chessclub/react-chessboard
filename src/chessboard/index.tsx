@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
@@ -31,11 +31,6 @@ export const Chessboard = forwardRef<ClearPremoves, ChessboardProps>(
     const { customDndBackend, customDndBackendOptions, ...otherProps } = props;
     const [boardWidth, setBoardWidth] = useState<number>(Number(localStorage.getItem('boardSize')));
 
-    const [boardContainerPos, setBoardContainerPos] = useState({
-      left: 0,
-      top: 0,
-    });
-
     const boardRef = useRef<HTMLObjectElement>(null);
 
     useEffect(() => {
@@ -52,22 +47,10 @@ export const Chessboard = forwardRef<ClearPremoves, ChessboardProps>(
       }
     }, [boardRef.current]);
 
-    const metrics = useMemo(
-      () => boardRef.current?.getBoundingClientRect(),
-      [boardRef.current]
-    );
-
-    useEffect(() => {
-      setBoardContainerPos({
-        left: metrics?.left ? metrics?.left : 0,
-        top: metrics?.top ? metrics?.top : 0,
-      });
-    }, [metrics]);
-
     const backend =
       customDndBackend || ("ontouchstart" in window ? TouchBackend : HTML5Backend);
 
-    return (
+    return  (
       <ErrorBoundary>
         <div
           style={{ display: "flex", flexDirection: "column", width: "100%" }}
@@ -78,18 +61,18 @@ export const Chessboard = forwardRef<ClearPremoves, ChessboardProps>(
             context={window}
             options={customDndBackend ? customDndBackendOptions : undefined}
           >
-            <ChessboardProvider
-              boardWidth={boardWidth}
-              {...otherProps}
-              ref={ref}
-            >
-              <ConditionalDropLayer />
-              <CustomDragLayer boardContainer={boardContainerPos} />
-              <Board />
-            </ChessboardProvider>
+              <ChessboardProvider
+                boardWidth={boardWidth}
+                {...otherProps}
+                ref={ref}
+              >
+                <ConditionalDropLayer />
+                <CustomDragLayer />
+                <Board />
+              </ChessboardProvider>
           </DndProvider>
         </div>
       </ErrorBoundary>
-    )
+    ) 
   }
 );

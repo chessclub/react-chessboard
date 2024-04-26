@@ -134,11 +134,6 @@ export type Arrow = [Square, Square, string?];
 
 export type ChessboardProps = {
   /**
-   * Whether or not the piece can be dragged outside of the board
-   * @default true
-   * */
-  allowDragOutsideBoard?: boolean;
-  /**
    * Time in milliseconds for piece to slide to target square. Only used when the position is programmatically changed. If a new position is set before the animation is complete, the board will cancel the current animation and snap to the new position.
    * @default 300
    */
@@ -158,11 +153,6 @@ export type ChessboardProps = {
    * @default false
    */
   arePremovesAllowed?: boolean;
-  /**
-   * Whether or not to automatically promote pawn to queen
-   * @default false
-   */
-  autoPromoteToQueen?: boolean;
   /**
    * The orientation of the board, the chosen colour will be at the bottom of the board.
    * @default white
@@ -194,11 +184,6 @@ export type ChessboardProps = {
    * @default {}
    */
   customBoardStyle?: Record<string, string | number>;
-  /**
-   * Custom notation style object e.g. { fontSize: '12px' }
-   * @default {}
-   */
-  customNotationStyle?: Record<string, string | number>;
   /**
    * Custom dark square style object.
    * @default { backgroundColor: "#B58863" }
@@ -291,7 +276,7 @@ export type ChessboardProps = {
    * User function that is run when piece is clicked.
    * @default () => {}
    */
-  onPieceClick?: (piece: Piece, square: Square) => any;
+  onPieceClick?: (piece: Piece) => any;
   /**
    * User function that is run when piece is grabbed to start dragging.
    * @default () => {}
@@ -331,7 +316,7 @@ export type ChessboardProps = {
    * User function that is run when a square is clicked.
    * @default () => {}
    */
-  onSquareClick?: (square: Square, piece: Piece | undefined) => any;
+  onSquareClick?: (square: Square) => any;
   /**
    * User function that is run when a square is right clicked.
    * @default () => {}
@@ -371,5 +356,14 @@ export type ChessboardProps = {
    * @default true
    */
   snapToCursor?: boolean;
-  clearPremove?: any
+  /**
+   * Whether or not to automatically promote pawn to queen
+   * @default false
+   */
+  autoPromoteToQueen?: boolean;
+  /**
+   * Whether or not to allow piece dragging outside the board
+   * @default true;
+   */
+  allowDragOutsideBoard?: boolean;
 };

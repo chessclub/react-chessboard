@@ -171,6 +171,7 @@ export type ChessboardProps = {
    * Array where each element is a tuple containing two Square values (representing the 'from' and 'to' squares), an optional third string element for the arrow color and an optional fourth number element for the arrow opacity.
    * e.g. [ ['a3', 'a5', 'red', 1], ['b1', 'd5'] ].
    * If third element in array is missing arrow will have `customArrowColor` or default color value
+   * If fourth element in array is missing arrow will have `0.65` opacity by default value
    * @default []
    */
   customArrows?: Arrow[];

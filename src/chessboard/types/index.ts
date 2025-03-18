@@ -130,7 +130,7 @@ export type DropOffBoardAction = "snapback" | "trash";
 
 export type Coords = { x: number; y: number };
 
-export type Arrow = [Square, Square, string?];
+export type Arrow = [Square, Square, string?, number?];
 
 export type ChessboardProps = {
   /**
@@ -168,8 +168,8 @@ export type ChessboardProps = {
    */
   clearPremovesOnRightClick?: boolean;
   /**
-   * Array where each element is a tuple containing two Square values (representing the 'from' and 'to' squares) and an optional third string element for the arrow color
-   * e.g. [ ['a3', 'a5', 'red'], ['b1, 'd5] ].
+   * Array where each element is a tuple containing two Square values (representing the 'from' and 'to' squares), an optional third string element for the arrow color and an optional fourth number element for the arrow opacity.
+   * e.g. [ ['a3', 'a5', 'red', 1], ['b1', 'd5'] ].
    * If third element in array is missing arrow will have `customArrowColor` or default color value
    * @default []
    */

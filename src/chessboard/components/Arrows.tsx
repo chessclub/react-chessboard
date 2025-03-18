@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 
-import { getRelativeCoords } from "../functions";
 import { useChessboard } from "../context/chessboard-context";
+import { getRelativeCoords } from "../functions";
 import { Arrow } from "../types";
 
 export const Arrows = () => {
@@ -28,7 +28,7 @@ export const Arrows = () => {
       }}
     >
       {arrowsList.map((arrow, i) => {
-        const [arrowStartField, arrowEndField, arrowColor] = arrow;
+        const [arrowStartField, arrowEndField, arrowColor, arrowOpacity] = arrow;
         if (arrowStartField === arrowEndField) return null;
         const from = getRelativeCoords(
           boardOrientation,
@@ -87,7 +87,7 @@ export const Arrows = () => {
               y1={from.y}
               x2={end.x}
               y2={end.y}
-              opacity={isArrowActive ? "0.5" : "0.65"}
+              opacity={isArrowActive ? "0.5" : (arrowOpacity || "0.65")}
               stroke={arrowColor ?? primaryArrowCollor}
               strokeWidth={
                 isArrowActive ? (0.9 * boardWidth) / 40 : boardWidth / 40

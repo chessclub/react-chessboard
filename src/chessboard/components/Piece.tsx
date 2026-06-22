@@ -60,7 +60,7 @@ export function Piece({
         isDragging: !!monitor.isDragging(),
       }),
     }),
-    [piece, square, currentPosition, id]
+    [piece, square, currentPosition, id, isDraggablePiece]
   );
 
   // hide the default preview

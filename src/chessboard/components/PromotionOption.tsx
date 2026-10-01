@@ -20,6 +20,7 @@ export function PromotionOption({ option }: Props) {
     promoteFromSquare,
     promoteToSquare,
     promotionDialogVariant,
+    setShowPromoteDialog,
   } = useChessboard();
 
   const backgroundColor = () => {
@@ -42,14 +43,13 @@ export function PromotionOption({ option }: Props) {
   return (
     <div
       onClick={() => {
-        onPromotionPieceSelect?.length
-          ? onPromotionPieceSelect(option)
-          : handleSetPosition(
-              promoteFromSquare!,
-              promoteToSquare!,
-              option,
-              true
-            );
+        if (onPromotionPieceSelect?.length) {
+          onPromotionPieceSelect(option);
+        } else if (promoteFromSquare && promoteToSquare) {
+          handleSetPosition(promoteFromSquare, promoteToSquare, option, true);
+        }
+        // hide in this commit: a queued second click must not hit a stale dialog
+        setShowPromoteDialog(false);
       }}
       onMouseOver={() => setIsHover(true)}
       onMouseOut={() => setIsHover(false)}

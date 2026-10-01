@@ -1,7 +1,8 @@
+import { BackendFactory, Identifier } from "dnd-core";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { TouchBackend } from "react-dnd-touch-backend";
+import { TouchBackend, TouchBackendImpl } from "react-dnd-touch-backend";
 
 import { Board } from "./components/Board";
 import { CustomDragLayer } from "./components/CustomDragLayer";
@@ -26,19 +27,53 @@ export type ClearPremoves = {
   clearPremoves: (clearLastPieceColour?: boolean) => void;
 };
 
+// The touch backend keeps touchstart source ids until the first touchmove; if
+// that piece unmounted meanwhile (another finger's move still reaches the
+// document), beginDrag throws "Expected sourceIds to be registered".
+const GuardedTouchBackend: BackendFactory = (manager, context, options) => {
+  const backend = TouchBackend(manager, context, options) as TouchBackendImpl;
+  const handleTopMove = backend.handleTopMove;
+  backend.handleTopMove = (e) => {
+    const state = backend as unknown as { moveStartSourceIds?: Identifier[] };
+    state.moveStartSourceIds = state.moveStartSourceIds?.filter((id) =>
+      manager.getRegistry().getSource(id)
+    );
+    handleTopMove(e);
+  };
+  return backend;
+};
+
 export const Chessboard = forwardRef<ClearPremoves, ChessboardProps>(
   (props, ref) => {
     const { customDndBackend, customDndBackendOptions, ...otherProps } = props;
-    const [boardWidth, setBoardWidth] = useState<number>(Number(localStorage.getItem('boardSize')));
+    const [boardWidth, setBoardWidth] = useState<number>(() => {
+      try {
+        return Number(localStorage.getItem("boardSize"));
+      } catch {
+        return 0;
+      }
+    });
 
     const boardRef = useRef<HTMLObjectElement>(null);
 
     useEffect(() => {
       if (props.boardWidth === undefined && boardRef.current?.offsetWidth) {
-        const resizeObserver = new ResizeObserver(() => {
-          localStorage.setItem('boardSize', `${boardRef.current?.offsetWidth}`);
+        const update = () => {
+          try {
+            localStorage.setItem(
+              "boardSize",
+              `${boardRef.current?.offsetWidth}`,
+            );
+          } catch {}
           setBoardWidth(boardRef.current?.offsetWidth as number);
-        });
+        };
+        // Some hardened WebKit profiles lack ResizeObserver: size once now, then follow window resizes.
+        if (typeof ResizeObserver === "undefined") {
+          update();
+          window.addEventListener("resize", update);
+          return () => window.removeEventListener("resize", update);
+        }
+        const resizeObserver = new ResizeObserver(update);
         resizeObserver.observe(boardRef.current);
 
         return () => {
@@ -48,7 +83,7 @@ export const Chessboard = forwardRef<ClearPremoves, ChessboardProps>(
     }, [boardRef.current]);
 
     const backend =
-      customDndBackend || ("ontouchstart" in window ? TouchBackend : HTML5Backend);
+      customDndBackend || ("ontouchstart" in window ? GuardedTouchBackend : HTML5Backend);
 
     return  (
       <ErrorBoundary>
